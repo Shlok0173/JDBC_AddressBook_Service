@@ -2,6 +2,7 @@
 package com.bridgelabz.addressbook;
 
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -11,6 +12,8 @@ import java.util.List;
 
 public class AddressBookMain {
 	Connection connection;
+
+
 
     private Connection getConnection() {
         String URL_JD = "jdbc:mysql://localhost:3306/AddressBookService";
@@ -72,6 +75,66 @@ public class AddressBookMain {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<ContactsData> findAllForParticularDate(LocalDate date) {
+        ResultSet resultSet = null;
+        List<ContactsData> addressBookList = new ArrayList<ContactsData>();
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            String sql = "select * from AddressBook where date_added between cast(' " + date + "'" + " as date)  and date(now());";
+            resultSet = statement.executeQuery(sql);
+            int count = 0;
+            while (resultSet.next()) {
+            	ContactsData contactInfo = new ContactsData();
+                contactInfo.setFirstName(resultSet.getString("firstName"));
+                contactInfo.setLastName(resultSet.getString("Lastname"));
+                contactInfo.setAddress(resultSet.getString("address"));
+                contactInfo.setCity(resultSet.getString("city"));
+                contactInfo.setState(resultSet.getString("state"));
+                contactInfo.setZip(resultSet.getInt("zip"));
+                contactInfo.setPhoneNumber(resultSet.getString("phoneNumber"));
+                contactInfo.setEmailId(resultSet.getString("email"));
+                contactInfo.setBookName(resultSet.getString("bookName"));
+                contactInfo.setContactType(resultSet.getString("contactType"));
+                contactInfo.setDateAdded(resultSet.getDate("Date_added").toLocalDate());
+
+                addressBookList.add(contactInfo);
+            }
+        } catch (SQLException e) {
+            System.out.println(e);
+        }
+        return addressBookList;
+    }
+
+    public int countByCiy(String city) {
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            String sql = "select count(firstname) from AddressBook where city=" + "'" + city + "';";
+            ResultSet result = statement.executeQuery(sql);
+            result.next();
+            int count = result.getInt(1);
+
+
+            return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countByState(String state) {
+        try (Connection connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            String sql = "select count(firstname) from AddressBook where city=" + "'" + state + "';";
+            ResultSet result = statement.executeQuery(sql);
+            result.next();
+            int count = result.getInt(1);
+            return count;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
 }
